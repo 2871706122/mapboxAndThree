@@ -62,7 +62,7 @@
           for(let i=0;i<arr.length;i++){
             var div = document.createElement("div");
             div.className="point";
-            div.innerText="my name is a point";
+            div.innerText="point";
             var marker = new window.mapboxgl.Marker(div).setLngLat(arr[i]).addTo(window.map)
             this.marker.push(marker)
           }

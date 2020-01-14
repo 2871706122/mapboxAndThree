@@ -1,7 +1,7 @@
 <template>
     <div style="height:1080px;width:1920px;text-align:left;">
         <div id="basicMapbox" style="height:1080px;width:100%;"></div>
-        <div id="three"></div>
+        <!--<div id="three"></div>-->
     </div>
 </template>
 
@@ -24,8 +24,8 @@
             }
         },
         mounted() {
-            this.init();
             this.init2();
+            this.init();
         },
         methods: {
             // 初始化
@@ -136,11 +136,11 @@
                         this.camera.projectionMatrix = m1.multiply(m2);
 
                         this.renderer.state.reset();
+
+                        this.scene.add(that.scene);
+
                         this.renderer.render(this.scene,this.camera);
                         this.map.triggerRepaint();
-                        that.camera.projectionMatrix=m1.multiply(m2);
-                        //让线可以被摄像机拍摄到
-                        that.renderer.render(that.scene,that.camera);
                     }
                 };
 
@@ -151,53 +151,15 @@
                 window.map = map;
                 window.mapboxgl = mapboxgl;
             },
+            //创建一个正方体，在渲染信号塔的时候把正方体加在信号塔模型上面，作为一个整体，最后作为一个图层加入地图
             init2(){
-                //{ antialias: true, alpha: true } 可以让生成背景色为透明
-                this.renderer = new THREE.WebGLRenderer({ antialias:true,alpha: true});
-                this.renderer.setSize(1920,1080);
-                // renderer.domElement.id="threeBox"
-                document.getElementById("three").appendChild(this.renderer.domElement);
-
-                this.camera =  new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 500 );
-                this.camera.position.set( 0, 0, 100 );
-                this.camera.lookAt( 0, 0, 0 );
-
-
                 this.scene = new THREE.Scene();
-                //上面设置了背景透明，在这里依然可以对场景进行背景修改
-                // scene.background = new THREE.Color( 0xa0a0a0 );
-
-                //加灯光
-                // var directionalLight = new THREE.DirectionalLight(0xffffff);
-                // directionalLight.position.set(0, 70, 100).normalize();
-                // scene.add(directionalLight);
-
-                let light = new THREE.AmbientLight(0xffffff,1)
-                this.scene.add(light)
-
-                //材质
-                var material = new THREE.LineBasicMaterial({ color:"red" });
-                //路径
-                var geometry = new THREE.Geometry();
-                geometry.vertices.push(new THREE.Vector3( -10, 0, 0) );
-                geometry.vertices.push(new THREE.Vector3( 0, 10, 0) );
-                geometry.vertices.push(new THREE.Vector3( 10, 0, 0) );
-                //材质/路径 构成线
-                var line = new THREE.Line( geometry, material );
-
-                //添加到场景
-                this.scene.add(line );
-                //让线可以被摄像机拍摄到
-                this.renderer.render(this.scene,this.camera );
-
+                var geometry = new THREE.BoxGeometry( 10, 10, 10 );
+                var material = new THREE.MeshBasicMaterial({color: "rgb(45,45,45)"});
+                var cube = new THREE.Mesh( geometry, material );
+                cube.position.set(20,0,20);
+                this.scene.add( cube );
             },
-            init3(vector){
-                //随map动
-                this.camera.projectionMatrix=vector;
-                // console.log(this.camera,this.scene)
-                //让线可以被摄像机拍摄到
-                this.renderer.render(this.scene,this.camera);
-            }
         }
     }
 </script>
@@ -218,7 +180,7 @@
         left: 0px;
         width: 100%;
         height: 100%;
-        z-index: -1;
+        z-index: -2;
         pointer-events: none;
     }
 </style>
