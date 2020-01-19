@@ -1,7 +1,6 @@
 <template>
     <div style="height:1080px;width:1920px;text-align:left;" class="mapBox">
-        <div id="basicMapbox" style="height:1080px;width:100%;"></div>
-        <div id="three"></div>
+        <div id="basicMapbox"></div>
     </div>
 </template>
 
@@ -22,12 +21,17 @@
                 camera:"",
                 renderer:"",
                 scene:"",
+                flag:true,
+                init3scene:"",
+                init3camera:"",
+                init3renderer:"",
             }
         },
         mounted() {
             this.init2();
-            this.init();
             this.init3();
+            this.init();
+            //this.init3();
         },
         methods: {
             // 初始化
@@ -77,8 +81,8 @@
                     type: 'custom',
                     renderingMode: '3d',
                     onAdd: function(map, gl) {
-                        this.camera = new THREE.Camera();
-                        this.scene = new THREE.Scene();
+                        this.camera = that.init3camera
+                        this.scene = that.init3scene
 
                         //创建两个Three.js灯光来照亮模型
                         var directionalLight = new THREE.DirectionalLight(0xffffff);
@@ -106,10 +110,6 @@
                             antialias: true,
                             alpha:true
                         });
-                        //轴线
-                        // this.scene.add(
-                        //     new THREE.AxesHelper(1000)
-                        // )
 
                         this.renderer.autoClear = false;
                     },
@@ -134,8 +134,9 @@
                             .multiply(rotationX)
                             .multiply(rotationY)
                             .multiply(rotationZ);
-
-                        this.camera.projectionMatrix = m1.multiply(m2);
+                        let mat =  m1.multiply(m2);//注意，这个值一定要在这里保存起来，在下面使用mat这个变量，下面两个使用mat值的地方不能改为m1.multiply(m2)，改为这个会报错
+                        this.camera.projectionMatrix =mat;
+                        //that.zuoBiao = JSON.parse(JSON.stringify(m1.multiply(m2)));
                         this.scene.add(that.scene);
                         this.renderer.state.reset();
                         this.renderer.render(this.scene,this.camera);
@@ -160,62 +161,45 @@
                 this.scene.add( cube );
             },
             init3(){
-                var scene = new THREE.Scene();
+                this.init3scene = new THREE.Scene();
                 // var geometry = new THREE.SphereGeometry(60, 40, 40); //创建一个球体几何对象
-                var geometry = new THREE.BoxGeometry(100, 100, 100); //创建一个立方体几何对象Geometry
+                var geometry = new THREE.BoxGeometry(10, 10, 10); //创建一个立方体几何对象Geometry
                 var material = new THREE.MeshLambertMaterial({
                     color: 0x0000ff
                 }); //材质对象Material
                 var mesh = new THREE.Mesh(geometry, material); //网格模型对象Mesh
-                scene.add(mesh); //网格模型添加到场景中
+                this.init3scene.add(mesh); //网格模型添加到场景中
+                let axes = new THREE.AxesHelper(10000)
+                this.init3scene.add(axes)
                 /**
                  * 光源设置
                  */
-                    //点光源
-                var point = new THREE.PointLight(0xffffff);
-                point.position.set(400, 200, 300); //点光源位置
-                scene.add(point); //点光源添加到场景中
+                //     //点光源
+                // var point = new THREE.PointLight(0xffffff);
+                // point.position.set(400, 200, 300); //点光源位置
+                // this.init3scene.add(point); //点光源添加到场景中
                 //环境光
-                var ambient = new THREE.AmbientLight(0x444444);
-                scene.add(ambient);
-                // console.log(scene)
-                // console.log(scene.children)
+                // var ambient = new THREE.AmbientLight(0xffffff,1);
+                // this.init3scene.add(ambient);
                 /**
                  * 相机设置
                  */
                 var width = window.innerWidth; //窗口宽度
                 var height = window.innerHeight; //窗口高度
-                var k = width / height; //窗口宽高比
-                var s = 200; //三维场景显示范围控制系数，系数越大，显示的范围越大
                 //创建相机对象
-                var camera = new THREE.OrthographicCamera(-s * k, s * k, s, -s, 1, 1000);
-                camera.position.set(200, 300, 200); //设置相机位置
-                camera.lookAt(scene.position); //设置相机方向(指向的场景对象)
+                this.init3camera = new THREE.Camera();
                 /**
                  * 创建渲染器对象
                  */
-                var renderer = new THREE.WebGLRenderer({antialias: true,alpha:true});
-                renderer.setSize(width,height);//设置渲染区域尺寸
+                this.init3renderer = new THREE.WebGLRenderer({antialias: true,alpha:true});
+                this.init3renderer.setSize(width,height);//设置渲染区域尺寸
                 // renderer.setClearColor('rgba(0,0,0,0)',1); //设置背景颜色
-                renderer.domElement.style.pointerEvents='none'
-                document.getElementsByClassName("mapBox")[0].appendChild(renderer.domElement); //body元素中插入canvas对象
-                //执行渲染操作   指定场景、相机作为参数
-                // renderer.render(scene, camera)
-                //间隔20ms周期性调用函数fun,20ms也就是刷新频率是50FPS(1s/20ms)，每秒渲染50次
-                // setInterval(()=>{
-                //     renderer.state.reset();
-                //     renderer.render(scene,camera);//执行渲染操作
-                //     mesh.rotateY(0.01);//每次绕y轴旋转0.01弧度
-                // },20);
-
-                function render() {
-                    renderer.render(scene,camera);//执行渲染操作
-                }
-                render();
-                if(camera){
-                    var controls = new OrbitControls(camera,renderer.domElement);//创建控件对象
-                    controls.addEventListener('change',render);//监听鼠标、键盘事件
-                }
+                this.init3renderer.domElement.style.pointerEvents='none'
+                this.init3renderer.domElement.style.position = 'absolute'
+                this.init3renderer.domElement.style.top = 0
+                this.init3renderer.domElement.style.left = 0
+                this.init3renderer.domElement.style.zIndex = -2
+                document.getElementsByClassName("mapBox")[0].appendChild(this.init3renderer.domElement); //body元素中插入canvas对象
             }
         }
     }
@@ -229,15 +213,9 @@
         position: absolute;
         top: 0px;
         left: 0px;
+        height:1080px;
+        width:100%;
         z-index: -2;
     }
-    #three {
-        position: absolute;
-        top: 0px;
-        left: 0px;
-        width: 100%;
-        height: 100%;
-        z-index: -2;
-        pointer-events: none;
-    }
+
 </style>
