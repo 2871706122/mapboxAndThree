@@ -157,7 +157,7 @@
                 var geometry = new THREE.BoxGeometry( 10, 10, 10 );
                 var material = new THREE.MeshBasicMaterial({color: "rgb(45,45,45)"});
                 var cube = new THREE.Mesh( geometry, material );
-                cube.position.set(20,0,20);
+                cube.position.set(0,0,30);
                 this.scene.add( cube );
             },
             init3(){
@@ -168,7 +168,9 @@
                     color: 0x0000ff
                 }); //材质对象Material
                 var mesh = new THREE.Mesh(geometry, material); //网格模型对象Mesh
+                mesh.position.set(30,0,0)
                 this.init3scene.add(mesh); //网格模型添加到场景中
+                console.log(mesh)
                 let axes = new THREE.AxesHelper(10000)
                 this.init3scene.add(axes)
                 /**
